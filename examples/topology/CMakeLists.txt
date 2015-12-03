@@ -10,6 +10,7 @@ SET(DGTAL_EXAMPLES_TOPO_SRC
 #  generateSimplicityTables3D
   digitalSetToCubicalComplexes2D
   ParDirCollapse2D
+#  cubical-complex-illustrations
 )
 
 FOREACH(FILE ${DGTAL_EXAMPLES_TOPO_SRC}) 
