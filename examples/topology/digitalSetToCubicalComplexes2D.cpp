@@ -51,6 +51,240 @@ using namespace DGtal;
 using namespace functors;
 using namespace Z2i;
 
+
+template <typename TKSpace, typename TCellContainer,
+          typename CellConstIterator,
+          typename CellMapIteratorPriority >
+DGtal::uint64_t collapse( CubicalComplex< TKSpace, TCellContainer >& K,
+                            CellConstIterator S_itB, CellConstIterator S_itE,
+                            const CellMapIteratorPriority& priority,
+                            bool hintIsSClosed, bool hintIsKClosed,
+                            bool verbose )
+{
+
+  using namespace std;
+  typedef CubicalComplex< TKSpace, TCellContainer > CC;
+  typedef typename CC::Cell                         Cell;
+  typedef typename CC::CellType                     CellType;
+  typedef typename CC::CellMapIterator              CellMapIterator;
+  typedef vector< CellMapIterator >                 CMIVector;
+  typedef typename CMIVector::const_iterator        CMIVectorConstIterator;
+  // NB : a maximal k-cell is collapsible if it has a free incident k-1-cell.
+  Dimension n = K.dim();
+  CMIVector S;            // stores the cells to process
+  CMIVector Q_low;        // stores the iterators on direct faces of the maximal cell.
+  CMIVector Q_collapsible;// stores collapsible cells in order to clean them at the end.
+  CellMapIterator        it_cell;   // generic iterator on a cell.
+  CellMapIterator        it_cell_c; // points on c in the free pair (c,d)
+  CellMapIterator        it_cell_d; // points on d in the free pair (c,d)
+  CMIVectorConstIterator itlow;
+  CMIVectorConstIterator itqup;
+
+  if ( verbose ) trace.info() << "[CC::collapse]-+ tag collapsible elements... " << flush;
+  // Restricts the set of elements that are collapsible.
+  if ( hintIsSClosed )
+    for ( CellConstIterator S_it = S_itB; S_it != S_itE; ++S_it )
+      {
+        Cell c           = *S_it;
+        Dimension k      = K.dim( c );
+        it_cell          = K.findCell( k, c );
+    uint32_t& ccdata = it_cell->second.data;
+        ASSERT( it_cell != K.end( k ) );
+        S.push_back( it_cell );
+    if ( ! ( ccdata & (CC::FIXED | CC::COLLAPSIBLE ) ) )
+      {
+        ccdata |= CC::COLLAPSIBLE;
+        Q_collapsible.push_back( it_cell );
+      }
+      }
+  else // not ( hintIsSClosed )
+    for ( CellConstIterator S_it = S_itB; S_it != S_itE; ++S_it )
+      {
+        Cell c           = *S_it;
+        Dimension k      = K.dim( c );
+        it_cell          = K.findCell( k, c );
+        uint32_t& ccdata = it_cell->second.data;
+        ASSERT( it_cell != K.end( k ) );
+        S.push_back( it_cell );
+        if ( ! ( ccdata & (CC::FIXED | CC::COLLAPSIBLE ) ) )
+          {
+            ccdata |= CC::COLLAPSIBLE;
+            Q_collapsible.push_back( it_cell );
+          }
+        vector<Cell> cells;
+        back_insert_iterator< vector<Cell> > back_it( cells );
+        K.faces( back_it, c, hintIsKClosed );
+        for ( typename vector<Cell>::const_iterator
+                it = cells.begin(), itE = cells.end(); it != itE; ++it )
+          {
+            it_cell           = K.findCell( *it );
+            uint32_t& ccdata2 = it_cell->second.data;
+            if ( ! ( ccdata2 & (CC::FIXED | CC::COLLAPSIBLE ) ) )
+              {
+                ccdata2 |= CC::COLLAPSIBLE;
+                Q_collapsible.push_back( it_cell );
+              }
+          }
+      }
+  if ( verbose ) trace.info() << " " << Q_collapsible.size() << " found." << endl;
+
+  // Fill queue
+  priority_queue<CellMapIterator, CMIVector, CellMapIteratorPriority> PQ( priority );
+
+  if ( verbose ) trace.info() << "[CC::collapse]-+ entering collapsing loop. " << endl;
+  uint64_t nb_pass     = 0;
+  uint64_t nb_examined = 0;
+
+    uint64_t nb_removed  = 0;
+
+  while ( ! S.empty() )
+    {
+      for ( CMIVectorConstIterator it = S.begin(), itE = S.end();
+            it != itE; ++it )
+    {
+      PQ.push( *it );
+      (*it)->second.data |= CC::USER1;
+    }
+      S.clear();
+      if ( verbose ) trace.info() << "[CC::collapse]---+ Pass " << ++nb_pass
+                                  << ", Card(PQ)=" << PQ.size() << " elements, "
+                                  << "nb_exam=" << nb_examined << endl;
+
+      // Try to collapse elements according to priority queue.
+      while ( ! PQ.empty() )
+    {
+      // Get top element.
+      CellMapIterator itcur = PQ.top();
+          uint32_t& cur_data    = itcur->second.data;
+      PQ.pop();
+      ++nb_examined;
+      // Check if the cell is removable
+      if ( ( cur_data & CC::REMOVED ) || ( ! ( cur_data & CC::COLLAPSIBLE ) ) )
+            continue;
+          // Check if the cell was several time in the queue and is already processed.
+          if ( ! ( cur_data & CC::USER1 ) )
+            continue;
+      ASSERT( cur_data & CC::USER1 );
+          cur_data             &= ~CC::USER1;
+
+      // Cell may be removable.
+      // Check if it is a maximal cell
+      CellMapIterator itup;
+      const Cell & cur_c  = itcur->first;
+          CellType cur_c_type = K.computeCellType( cur_c, itup, n );
+      bool found_pair     = false;
+          // trace.info() << "  - Cell " << cur_c << " Dim=" << dim( cur_c ) << " Type=" << cur_c_type << std::endl;
+      if ( cur_c_type == CC::Maximal )
+        { // maximal cell... must find a free face
+          // check faces to find a free face.
+              back_insert_iterator< CMIVector > back_it( Q_low );
+              K.directFacesIterators( back_it, cur_c );
+          CellMapIterator best_free_face_it = K.end( 0 );
+          for ( CMIVectorConstIterator it = Q_low.begin(), itE = Q_low.end();
+                    it != itE; ++it )
+        {
+                  CellMapIterator low_ic = *it;
+                  uint32_t& data         = low_ic->second.data;
+                  // trace.info() << "    + Cell " << low_ic->first << " data=" << data << std::endl;
+          if ( ( data & CC::REMOVED ) || ! ( data & CC::COLLAPSIBLE ) ) continue;
+          const Cell& cur_d   = low_ic->first;
+                  CellType cur_d_type = K.computeCellType( cur_d, itup, n );
+                  // trace.info() << "      + Type=" << cur_d_type << std::endl;
+          if ( cur_d_type == CC::Free )
+            { // found a free n-1-face ic
+              if ( ( best_free_face_it == K.end( 0 ) )
+               || ( ! priority( low_ic, best_free_face_it ) ) )
+            best_free_face_it = low_ic;
+            }
+        }
+          if ( best_free_face_it != K.end( 0 ) )
+        {
+          // delete c and ic.
+          found_pair = true;
+          it_cell_c  = itcur;
+          it_cell_d  = best_free_face_it;
+          // Q_low already contains cells that should be
+          // checked again
+        }
+        }
+      else if ( cur_c_type == CC::Free )
+        { // free face... check that its 1-up-incident face is maximal.
+          CellMapIterator it_up_up;
+          const Cell& cur_d   = itup->first;
+              CellType cur_d_type = K.computeCellType( cur_d, it_up_up, n );
+          if ( cur_d_type == CC::Maximal )
+        { // found a maximal face.
+          found_pair = true;
+          it_cell_c  = itup;
+          it_cell_d  = itcur;
+          // Q_low will contain cells that should be checked
+          // again
+                  back_insert_iterator< CMIVector > back_it( Q_low );
+                  K.directFacesIterators( back_it, it_cell_c->first );
+        }
+        }
+      if ( found_pair )
+        { // If found, remove pair from complex (logical removal).
+          it_cell_c->second.data |= CC::REMOVED;
+          it_cell_d->second.data |= CC::REMOVED;
+              nb_removed             += 2;
+          // Incident cells have to be checked again.
+          for ( CMIVectorConstIterator it = Q_low.begin(), itE = Q_low.end();
+                    it != itE; ++it )
+                {
+                  it_cell             = *it;
+          uint32_t& data_qlow = it_cell->second.data;
+          if ( ( ! ( data_qlow & CC::REMOVED ) )
+               && ( data_qlow & CC::COLLAPSIBLE )
+               && ( ! ( data_qlow & CC::USER1 ) ) )
+            {
+              S.push_back( it_cell );
+            }
+        }
+        }
+          Q_low.clear();
+    } // while ( ! PQ.empty() )
+    } // while ( ! S.empty() )
+
+  if ( verbose ) trace.info() << "[CC::collapse]-+ cleaning complex." << std::endl;
+
+  // Now clean the complex so that removed cells are effectively
+  // removed and no more cell is tagged as collapsible.
+  for ( CMIVectorConstIterator it = Q_collapsible.begin(), itE = Q_collapsible.end();
+        it != itE; ++it )
+    {
+      CellMapIterator cmIt  = *it;
+      uint32_t& cur_data    = cmIt->second.data;
+      if ( cur_data & CC::REMOVED ) K.eraseCell( cmIt );
+      else                          cur_data &= ~CC::COLLAPSIBLE;
+      // if ( (*it)->second.data & CC::REMOVED )
+      //   K.eraseCell( *it );
+      // else
+      //   (*it)->second.data &= ~CC::COLLAPSIBLE;
+    }
+
+  return nb_removed;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int main( int , char** )
@@ -106,6 +340,75 @@ int main( int , char** )
 		 board << it->first;
 	 }
   
+  // TO PART MOU
+    CC::DefaultCellMapIteratorPriority P;
+
+    Integer m=40;
+
+    std::vector<Cell> SUB;
+
+    for ( Integer x = 0; x <= m; ++x )
+      for ( Integer y = 0; y <= m; ++y )
+        for ( Integer z = 0; z <= m; ++z )
+          {
+           //Point k1 = Point( x, y, z );
+            Point k1 = Point( x, y );
+
+            SUB.push_back( K.uCell( k1 ) );
+
+            double d1 = Point::diagonal( 1 ).dot( k1 ) / (double) KSpace::dimension; // sqrt( (double) KSpace::dimension );
+
+            //RealPoint v1( k1[ 0 ], k1[ 1 ], k1[ 2 ] );
+
+            RealPoint v1( k1[ 0 ], k1[ 1 ]);
+
+            v1 -= d1 * RealPoint::diagonal( 1.0 );
+
+            double n1 = v1.norm();
+
+            /*bool fixed = ( ( x == 0 ) && ( y == 0 ) && ( z == 0 ) )
+              || ( ( x == 0 ) && ( y == m ) && ( z == 0 ) )
+              || ( ( x == m ) && ( y == 0 ) && ( z == 0 ) )
+              || ( ( x == m ) && ( y == m ) && ( z == 0 ) )
+              || ( ( x == m/3 ) && ( y == 2*m/3 ) && ( z == 2*m/3 ) )
+              || ( ( x == 0 ) && ( y == 0 ) && ( z == m ) )
+              || ( ( x == 0 ) && ( y == m ) && ( z == m ) )
+              || ( ( x == m ) && ( y == 0 ) && ( z == m ) )
+              || ( ( x == m ) && ( y == m ) && ( z == m ) )
+              || ( ( x == 0 ) && ( y == m ) )
+              || ( ( x == m ) && ( y == m ) )
+              || ( ( z == 0 ) && ( y == m ) )
+              || ( ( z == m ) && ( y == m ) );
+            complex.insertCell( SUB.back(),
+                                fixed ? CC::FIXED
+                                : (uint32_t) floor(64.0 * n1 ) // This is the priority for collapse
+                                );
+                                */
+
+            bool fixed = ( ( x == 0 ) && ( y == 0 ) )
+              || ( ( x == 0 ) && ( y == m ) )
+              || ( ( x == m ) && ( y == 0 ) )
+              || ( ( x == m ) && ( y == m ) )
+              || ( ( x == m/3 ) && ( y == 2*m/3 ) )
+              || ( ( x == 0 ) && ( y == 0 ) )
+              || ( ( x == 0 ) && ( y == m ) )
+              || ( ( x == m ) && ( y == 0 ) )
+              || ( ( x == m ) && ( y == m ) )
+              || ( ( x == 0 ) && ( y == m ) )
+              || ( ( x == m ) && ( y == m ) )
+              || ( ( z == 0 ) && ( y == m ) )
+              || ( ( z == m ) && ( y == m ) );
+            complex.insertCell( SUB.back(),
+                                fixed ? CC::FIXED
+                                : (uint32_t) floor(64.0 * n1 ) // This is the priority for collapse
+                                );
+
+          }
+
+
+
+    uint64_t removed = collapse( complex, SUB.begin(), SUB.end(), P, true, true, true );
+
   board.saveEPS ( "cubicalComplexes.eps" );
   trace.endBlock();
   trace.endBlock();
