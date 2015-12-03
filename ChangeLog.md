@@ -2,10 +2,29 @@
 # DGtal 0.9.1
 
 ## New Features / Critical Changes
+- *Base Package*
+ - Traits class for containers in order to probe their category at compile time.
+   (Jacques-Olivier Lachaud, [#1079](https://github.com/DGtal-team/DGtal/pull/1079))
+ - Generic set operations for arbitrary containers. You may use overloaded operators
+   like &, |, -, ^ on arbitrary containers (list, vector, unordered_set, map, etc).
+   (Jacques-Olivier Lachaud, [#1079](https://github.com/DGtal-team/DGtal/pull/1079))
+
+- *Topology Package*
+ - New class CubicalComplex and functions associated to
+   it. Arbitrary cubical complexes can be represented, displayed and
+   multiple operations are defined onto them: incidence, closing,
+   opening, closure, star, link, interior, boundary, set operations
+   and relations, as a collapse operation.
+   (Jacques-Olivier Lachaud, [#1079](https://github.com/DGtal-team/DGtal/pull/1079))
+
 - *Geometry Package*
  - Hull2DHelpers: implementation of the rotating caliper algorithm to compute
    the width (vertical/horizontal or Euclidean) of a convex hull.
    (Bertrand Kerautret, [#1052](https://github.com/DGtal-team/DGtal/pull/1052))
+
+ - MelkmanConvexHull: new reverse method to allow point insertions and convex
+   hull computation on both side of a point sequence.
+   (Bertrand Kerautret, [#1073](https://github.com/DGtal-team/DGtal/pull/1073))
 
 ## Changes
 - *Base Package*
@@ -42,6 +61,17 @@
 # DGtal 0.9
 
 ## New Features / Critical Changes
+- *Geometry Package*
+
+- New segment computer allowing the recognition of thick digital segments,
+  adapted to noisy contours (from a given thickness parameter). The current
+  implementation (mainly a backport from imagene) is a model of
+  CForwardSegmentComputer with a ParallelStrip primitive. This primitive is
+  similar to the blurred segment of [Debled-Rennesson etal 2005] with isothetic
+  thickness. It is also an implementation of the alpha-thick segment of Alexandre
+  Faure and Fabien Feschet.
+  (Bertrand Kerautret,  [#963](https://github.com/DGtal-team/DGtal/pull/963))
+
 
 - *Configuration/General*
  - Continuous integration enabled on both linux and macosx
@@ -71,7 +101,7 @@
  - Specializations of std::hash (c++11) and boost::hash to define a hash
    functions on DGtal points. (David Coeurjolly,
    [#1023](https://github.com/DGtal-team/DGtal/pull/1023)
- 
+
 ## Changes
 
 - *DEC Package*

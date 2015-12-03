@@ -30,7 +30,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <map>
-#include <unordered_map>
 #include "DGtal/base/Common.h"
 #include "DGtal/helpers/StdDefs.h"
 
@@ -38,60 +37,13 @@
 #include "DGtal/io/viewers/Viewer3D.h"
 #include "DGtal/topology/KhalimskySpaceND.h"
 #include "DGtal/topology/CubicalComplex.h"
+#include "DGtal/topology/CubicalComplexFunctions.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
 using namespace DGtal;
 using namespace DGtal::Z3i;
-
-namespace std {
-  template < DGtal::Dimension dim,
-             typename TInteger >
-  struct hash< DGtal::KhalimskyCell<dim, TInteger> >{
-    typedef DGtal::KhalimskyCell<dim, TInteger> Key;
-    typedef Key argument_type;
-    typedef std::size_t result_type;
-    inline hash() {}
-    inline result_type operator()( const argument_type& cell ) const
-    {
-      result_type h = cell.myCoordinates[ 0 ];
-      static const result_type mult[ 8 ] = { 1, 1733, 517237, 935783132, 305, 43791, 12846764, 56238719 };
-      // static const result_type shift[ 8 ] = { 0, 13, 23, 7, 19, 11, 25, 4 };
-      for ( DGtal::Dimension i = 1; i < dim; ++i )
-        h += cell.myCoordinates[ i ] * mult[ i & 0x7 ];
-      // h += cell.myCoordinates[ i ] << shift[ i & 0x7 ];
-      return h;
-    }
-  };
-  template < typename TInteger >
-  struct hash< DGtal::KhalimskyCell<2, TInteger> >{
-    typedef DGtal::KhalimskyCell<3, TInteger> Key;
-    typedef Key argument_type;
-    typedef std::size_t result_type;
-    inline hash() {}
-    inline result_type operator()( const argument_type& cell ) const
-    {
-      result_type h = cell.myCoordinates[ 0 ];
-      h += cell.myCoordinates[ 1 ] * 1733;
-      return h;
-    }
-  };
-  template < typename TInteger >
-  struct hash< DGtal::KhalimskyCell<3, TInteger> >{
-    typedef DGtal::KhalimskyCell<3, TInteger> Key;
-    typedef Key argument_type;
-    typedef std::size_t result_type;
-    inline hash() {}
-    inline result_type operator()( const argument_type& cell ) const
-    {
-      result_type h = cell.myCoordinates[ 0 ];
-      h += cell.myCoordinates[ 1 ] * 1733;
-      h += cell.myCoordinates[ 2 ] * 517237;
-      return h;
-    }
-  };
-}
 
 
 /**
@@ -128,8 +80,8 @@ int main( int argc, char** argv )
 {
   // JOL: unordered_map is approximately twice faster than map for
   // collapsing.
-  // typedef std::map<Cell, CubicalCellData> Map;
-  typedef std::unordered_map<Cell, CubicalCellData>   Map;
+  typedef std::map<Cell, CubicalCellData> Map;
+  // typedef boost::unordered_map<Cell, CubicalCellData>   Map;
   typedef CubicalComplex< KSpace, Map >     CC;
 
   trace.beginBlock( "Creating Cubical Complex" );
@@ -194,7 +146,9 @@ int main( int argc, char** argv )
   
   trace.beginBlock( "Collapsing complex" );
   CC::DefaultCellMapIteratorPriority P;
-  complex.collapse( S.begin(), S.end(), P, true, true, true );
+  uint64_t removed 
+    = functions::collapse( complex, S.begin(), S.end(), P, true, true, true );
+  trace.info() << "Collapse removed " << removed << " cells." << std::endl;
   trace.info() << "After collapse: " << complex << std::endl;
   trace.endBlock();
 
