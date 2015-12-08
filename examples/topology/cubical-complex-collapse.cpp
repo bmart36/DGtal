@@ -119,6 +119,7 @@ int main( int argc, char** argv )
                               : (uint32_t) floor(64.0 * n1 ) // This is the priority for collapse 
                               );
         }
+
   //complex.close();
   trace.info() << "After close: " << complex << std::endl;
   trace.endBlock();
