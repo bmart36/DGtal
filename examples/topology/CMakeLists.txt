@@ -9,7 +9,8 @@ SET(DGTAL_EXAMPLES_TOPO_SRC
 #  generateSimplicityTables2D
 #  generateSimplicityTables3D
   digitalSetToCubicalComplexes2D
-  cubical-complex-illustrations
+  ParDirCollapse2D
+#  cubical-complex-illustrations
 )
 
 FOREACH(FILE ${DGTAL_EXAMPLES_TOPO_SRC}) 
@@ -21,7 +22,7 @@ ENDFOREACH(FILE)
 
 if (  WITH_VISU3D_QGLVIEWER )
    SET(DGTAL_EXAMPLES_QGL_SRC
-     cubical-complex-collapse
+#     cubical-complex-collapse
 #     homotopicThinning3D
 #     3dBorderExtraction
 #     3dBorderExtractionImg
