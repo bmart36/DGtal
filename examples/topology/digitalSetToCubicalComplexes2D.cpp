@@ -269,22 +269,6 @@ DGtal::uint64_t collapse( CubicalComplex< TKSpace, TCellContainer >& K,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ///////////////////////////////////////////////////////////////////////////////
 
 int main( int , char** )
@@ -340,74 +324,100 @@ int main( int , char** )
 		 board << it->first;
 	 }
   
-  // TO PART MOU
+//  // TO PART MOU
     CC::DefaultCellMapIteratorPriority P;
 
     Integer m=40;
 
     std::vector<Cell> SUB;
 
-    for ( Integer x = 0; x <= m; ++x )
-      for ( Integer y = 0; y <= m; ++y )
-        for ( Integer z = 0; z <= m; ++z )
-          {
-           //Point k1 = Point( x, y, z );
-            Point k1 = Point( x, y );
+//    for ( Integer x = 0; x <= m; ++x )
+//      for ( Integer y = 0; y <= m; ++y )
+//        for ( Integer z = 0; z <= m; ++z )
+//          {
+//           //Point k1 = Point( x, y, z );
+//            Point k1 = Point( x, y );
 
-            SUB.push_back( K.uCell( k1 ) );
+//            SUB.push_back( K.uCell( k1 ) );
 
-            double d1 = Point::diagonal( 1 ).dot( k1 ) / (double) KSpace::dimension; // sqrt( (double) KSpace::dimension );
+//            double d1 = Point::diagonal( 1 ).dot( k1 ) / (double) KSpace::dimension; // sqrt( (double) KSpace::dimension );
 
-            //RealPoint v1( k1[ 0 ], k1[ 1 ], k1[ 2 ] );
+//            //RealPoint v1( k1[ 0 ], k1[ 1 ], k1[ 2 ] );
 
-            RealPoint v1( k1[ 0 ], k1[ 1 ]);
+//            RealPoint v1( k1[ 0 ], k1[ 1 ]);
 
-            v1 -= d1 * RealPoint::diagonal( 1.0 );
+//            v1 -= d1 * RealPoint::diagonal( 1.0 );
 
-            double n1 = v1.norm();
+//            double n1 = v1.norm();
+//            bool fixed = ( ( x == 0 ) && ( y == 0 ) )
+//              || ( ( x == 0 ) && ( y == m ) )
+//              || ( ( x == m ) && ( y == 0 ) )
+//              || ( ( x == m ) && ( y == m ) )
+//              || ( ( x == m/3 ) && ( y == 2*m/3 ) )
+//              || ( ( x == 0 ) && ( y == 0 ) )
+//              || ( ( x == 0 ) && ( y == m ) )
+//              || ( ( x == m ) && ( y == 0 ) )
+//              || ( ( x == m ) && ( y == m ) )
+//              || ( ( x == 0 ) && ( y == m ) )
+//              || ( ( x == m ) && ( y == m ) )
+//              || ( ( z == 0 ) && ( y == m ) )
+//              || ( ( z == m ) && ( y == m ) );
+//            complex.insertCell( SUB.back(), (uint32_t) floor(64.0 * n1 ) );
 
-            /*bool fixed = ( ( x == 0 ) && ( y == 0 ) && ( z == 0 ) )
-              || ( ( x == 0 ) && ( y == m ) && ( z == 0 ) )
-              || ( ( x == m ) && ( y == 0 ) && ( z == 0 ) )
-              || ( ( x == m ) && ( y == m ) && ( z == 0 ) )
-              || ( ( x == m/3 ) && ( y == 2*m/3 ) && ( z == 2*m/3 ) )
-              || ( ( x == 0 ) && ( y == 0 ) && ( z == m ) )
-              || ( ( x == 0 ) && ( y == m ) && ( z == m ) )
-              || ( ( x == m ) && ( y == 0 ) && ( z == m ) )
-              || ( ( x == m ) && ( y == m ) && ( z == m ) )
-              || ( ( x == 0 ) && ( y == m ) )
-              || ( ( x == m ) && ( y == m ) )
-              || ( ( z == 0 ) && ( y == m ) )
-              || ( ( z == m ) && ( y == m ) );
-            complex.insertCell( SUB.back(),
-                                fixed ? CC::FIXED
-                                : (uint32_t) floor(64.0 * n1 ) // This is the priority for collapse
-                                );
-                                */
+//          }
 
-            bool fixed = ( ( x == 0 ) && ( y == 0 ) )
-              || ( ( x == 0 ) && ( y == m ) )
-              || ( ( x == m ) && ( y == 0 ) )
-              || ( ( x == m ) && ( y == m ) )
-              || ( ( x == m/3 ) && ( y == 2*m/3 ) )
-              || ( ( x == 0 ) && ( y == 0 ) )
-              || ( ( x == 0 ) && ( y == m ) )
-              || ( ( x == m ) && ( y == 0 ) )
-              || ( ( x == m ) && ( y == m ) )
-              || ( ( x == 0 ) && ( y == m ) )
-              || ( ( x == m ) && ( y == m ) )
-              || ( ( z == 0 ) && ( y == m ) )
-              || ( ( z == m ) && ( y == m ) );
-            complex.insertCell( SUB.back(),
-                                fixed ? CC::FIXED
-                                : (uint32_t) floor(64.0 * n1 ) // This is the priority for collapse
-                                );
+    complex.fillData ( 0, CC::FIXED );
+    complex.fillData ( 1, CC::FIXED );
+    complex.fillData ( 2, CC::FIXED );
 
-          }
+    std::cout << "test " << std::endl;
+    board.clear();
 
+    CC::Iterator begin = complex.boundary().begin();
 
+    for (; begin != complex.boundary().end(); ++begin )
+    {
+        if ( K.uDim (*begin ) == 1 )
+        {
+            board << *begin;
+            complex.insertCell( *begin, 10 );
+            SUB.push_back( *begin );
+            Cells faces = K.uUpperIncident ( *begin );
+
+            for (int i = 0; i < faces.size(); i++)
+            {
+                if ( complex.find ( faces[i] ) != complex.end() )
+                {
+                    SUB.push_back( faces[i] );
+                    complex.insertCell( faces[i], 10 );
+                    board << faces[i];
+                    break;
+                }
+            }
+
+            Cells facesl = K.uLowerIncident ( *begin );
+
+            for (int i = 0; i < facesl.size(); i++)
+            {
+                if ( complex.find ( facesl[i] ) != complex.end() )
+                {
+                    SUB.push_back( facesl[i] );
+                    complex.insertCell( facesl[i], 11 );
+                    board << facesl[i];
+//                    break;
+                }
+            }
+
+        }
+    }
+
+    std::cout << "collapse " << std::endl;
 
     uint64_t removed = collapse( complex, SUB.begin(), SUB.end(), P, true, true, true );
+
+    std::cout << "Number " << removed << std::endl;
+
+//    board << complex;
 
   board.saveEPS ( "cubicalComplexes.eps" );
   trace.endBlock();
