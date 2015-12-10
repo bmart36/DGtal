@@ -9,7 +9,6 @@ SET(DGTAL_EXAMPLES_TOPO_SRC
 #  generateSimplicityTables2D
 #  generateSimplicityTables3D
   digitalSetToCubicalComplexes2D
-  ParDirCollapse2D
 #  cubical-complex-illustrations
 )
 
