@@ -63,21 +63,20 @@ public:
 
 public:
     PredefinedCubicalComplex(Point p, double r , double smallr, unsigned int k, double phi){
-      MyEuclideanShape shape = MyEuclideanShape(p, r, smallr, k, phi);
-      MyGaussDigitizer digShape;
-      digShape.attach( shape );
-      digShape.init ( shape.getLowerBound(), shape.getUpperBound(), 1.0 );
-      Domain domainShape = digShape.getDomain();
-      DigitalSet aSet = DigitalSet( domainShape );
-      Shapes<Domain>::digitalShaper( aSet, digShape );
+        MyEuclideanShape shape = MyEuclideanShape(p, r, smallr, k, phi);
+        MyGaussDigitizer digShape;
+        digShape.attach( shape );
+        digShape.init ( shape.getLowerBound(), shape.getUpperBound(), 1.0 );
+        Domain domainShape = digShape.getDomain();
+        DigitalSet aSet = DigitalSet( domainShape );
+        Shapes<Domain>::digitalShaper( aSet, digShape );
 
-      K.init ( domainShape.lowerBound(), domainShape.upperBound(), true );
-      complex = new CC ( K );
-      complex->construct( aSet);
+        K.init ( domainShape.lowerBound(), domainShape.upperBound(), true );
+        complex = new CC ( K );
+        complex->construct( aSet);
     }
 
     CC * getCubicalFlower () const { return complex; }
-//    ~PredefinedCubicalComplex() { delete  complex; }
 
 };
 
@@ -85,45 +84,45 @@ public:
 
 int main( int , char** )
 {
-  trace.beginBlock ( "Example digitalSetToCubicalComplexes2D" );
-  trace.beginBlock ( "Generate a 2D shape." );
-  PredefinedCubicalComplex PCC (  RealPoint( 0.0, 0.0 ), 16, 5, 5, M_PI_2/2.  );// = new PredefinedCubicalComplex();
-  Board2D board;
+    trace.beginBlock ( "Example digitalSetToCubicalComplexes2D" );
+    trace.beginBlock ( "Generate a 2D shape." );
+    PredefinedCubicalComplex PCC (  RealPoint( 0.0, 0.0 ), 16, 5, 5, M_PI_2/2.  );// = new PredefinedCubicalComplex();
+    Board2D board;
 
-  Color dorange ( 255,  136,  0,  220 );
-  board.saveEPS("pixel-flower.eps");
-  trace.endBlock();
-  
-  trace.beginBlock ( "Generate a 2D cubical representation." );
-  typedef map<Cell, CubicalCellData>   Map;
-  typedef CubicalComplex< KSpace, Map >     CC;
+    Color dorange ( 255,  136,  0,  220 );
+    board.saveEPS("pixel-flower.eps");
+    trace.endBlock();
 
-  
- /* typedef CC::CellMapConstIterator CellMapConstIterator;
-  for ( Dimension d = 0; d <= 2; ++d )
-    for ( CellMapConstIterator it = complex.begin( d ), itE = complex.end( d );
-	 it != itE; ++it )
-	 {
-	   if ( d == 0 )
-	     board << CustomStyle( it->first.className(),
-				   new CustomColors( Color( 0, 0, 0 ),
-						     Color( 0, 0, 0 ) ) );
-	  else if ( d == 1 )
-	       board << CustomStyle( it->first.className(),
-				     new CustomColors( Color( 200, 0, 0 ),
-						       Color( 100, 255, 100 ) ) );
-	  else
-		 board << CustomStyle( it->first.className(),
-				       new CustomColors( Color( 0, 0, 200 ),
-							 Color( 100, 255, 100 ) ) );
-		 board << it->first;
-	 }*/
-  board << *PCC.getCubicalFlower();
-  board.saveEPS ( "cubicalComplexes.eps" );
-  trace.endBlock();
-  trace.endBlock();
-  PCC.~PredefinedCubicalComplex();
-  return 0;
+    trace.beginBlock ( "Generate a 2D cubical representation." );
+    typedef map<Cell, CubicalCellData>   Map;
+    typedef CubicalComplex< KSpace, Map >     CC;
+
+
+    /* typedef CC::CellMapConstIterator CellMapConstIterator;
+     for ( Dimension d = 0; d <= 2; ++d )
+       for ( CellMapConstIterator it = complex.begin( d ), itE = complex.end( d );
+        it != itE; ++it )
+        {
+          if ( d == 0 )
+            board << CustomStyle( it->first.className(),
+                      new CustomColors( Color( 0, 0, 0 ),
+                                Color( 0, 0, 0 ) ) );
+         else if ( d == 1 )
+              board << CustomStyle( it->first.className(),
+                        new CustomColors( Color( 200, 0, 0 ),
+                                  Color( 100, 255, 100 ) ) );
+         else
+            board << CustomStyle( it->first.className(),
+                          new CustomColors( Color( 0, 0, 200 ),
+                                Color( 100, 255, 100 ) ) );
+            board << it->first;
+        }*/
+    board << *PCC.getCubicalFlower();
+    board.saveEPS ( "cubicalComplexes.eps" );
+    trace.endBlock();
+    trace.endBlock();
+    PCC.~PredefinedCubicalComplex();
+    return 0;
 }
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
