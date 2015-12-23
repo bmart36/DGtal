@@ -9,7 +9,6 @@ SET(DGTAL_EXAMPLES_TOPO_SRC
 #  generateSimplicityTables2D
 #  generateSimplicityTables3D
   digitalSetToCubicalComplexes2D
-  ParDirCollapse2D
 #  cubical-complex-illustrations
 )
 
@@ -34,7 +33,7 @@ if (  WITH_VISU3D_QGLVIEWER )
 #     volTrackBoundary
 #     volBreadthFirstTraversal
 #     frontierAndBoundary
-     digitalSurfaceSlice
+#     digitalSurfaceSlice
    )
   FOREACH(FILE ${DGTAL_EXAMPLES_QGL_SRC}) 
    add_executable(${FILE} ${FILE})

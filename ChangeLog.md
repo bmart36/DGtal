@@ -26,6 +26,15 @@
    hull computation on both side of a point sequence.
    (Bertrand Kerautret, [#1073](https://github.com/DGtal-team/DGtal/pull/1073))
 
+
+- *Math Package*
+ - MultiStatistics: new class to compute different statistics (like mean
+   variance, median) on multiple variables.
+   (Backport of the Statistics class of
+   [ImaGene](https://gforge.liris.cnrs.fr/projects/imagene) ).
+   (Bertrand Kerautret, Jacques-Olivier Lachaud
+   [#1076](https://github.com/DGtal-team/DGtal/pull/1076))
+
 ## Changes
 - *Base Package*
  - Enabling circulators in SimpleRandomAccessRangeFromPoint.
@@ -57,6 +66,11 @@
  - Fix wrong initialization of reverse iterators in SimpleRandomAccess(Const)RangeFromPoint.
    (Roland Denis, [#1060](https://github.com/DGtal-team/DGtal/pull/1060))
 
+- *Geometry Package*
+ - Fix pseudo-random number generator in KanungoNoise (David
+   Coeurjolly,
+   [#1078](https://github.com/DGtal-team/DGtal/pull/1078))
+   
 
 # DGtal 0.9
 
