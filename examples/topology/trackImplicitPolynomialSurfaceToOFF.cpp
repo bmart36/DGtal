@@ -164,7 +164,7 @@ int main( int argc, char** argv )
   MySetOfSurfels theSetOfSurfels( K, surfAdj );
   Surfel bel = Surfaces<KSpace>::findABel( K, dshape, 100000 );
   Surfaces<KSpace>::trackBoundary( theSetOfSurfels.surfelSet(),
-                                   K, surfAdj, 
+                                   K, surfAdj,
                                    dshape, bel );
   trace.endBlock();
   //! [trackImplicitPolynomialSurfaceToOFF-ExtractingSurface]
