@@ -67,22 +67,22 @@ CC::DefaultCellMapIteratorPriority P;
 typedef CC::CellMapConstIterator CellMapConstIterator;
 ///////////////////////////////////////////////////////////////////////////////
 
-int get_direction(const Cell& F, const Cell& G, const KSpace& K)
+void get_direction(const Cell& F, const Cell& G, const KSpace& K , int& shapeDirection)
 {
     Vector V=K.uKCoords(F)-K.uKCoords(G);
 
     //loop over V coordinates
     for (int i=0; i<K.dimension; i++)
-        if (V[i]!=0) return i;
+        if (V[i]!=0) shapeDirection=i;
 }
 
-int get_orientation(const Cell& F, const Cell& G, const KSpace& K)
+void get_orientation(const Cell& F, const Cell& G, const KSpace& K , int& shapeOrientation)
 {
     Vector V=K.uKCoords(F)-K.uKCoords(G);
 
     //loop over V coordinates
     for (int i=0; i<K.dimension; i++)
-        if (V[i]!=0) return V[i];
+        if (V[i]!=0) shapeOrientation = V[i];
 }
 
 void assign_values(const KSpace& K , CC::Iterator begin, CC& complex , int d,int orientation, int dim , std::vector<Cell> &SUB , int priority)
@@ -92,8 +92,11 @@ void assign_values(const KSpace& K , CC::Iterator begin, CC& complex , int d,int
     {//test the cell if it's in the complex
         if ( complex.findCell ( d+1, faces[i] ) != complex.end(d+1) )
         {
-            if (get_orientation(*begin, faces[i], K)==orientation &&
-                    get_direction(*begin, faces[i], K)==dim &&
+            int shapeOrientation,shapeDirection;
+            get_orientation(*begin, faces[i], K,shapeOrientation);
+            get_direction(*begin, faces[i], K,shapeDirection);
+            if (shapeOrientation==orientation &&
+                    shapeDirection==dim &&
                     K.uDim(faces[i])==d+1)
             {//assigning value with cells
                 SUB.push_back( faces[i] );
@@ -123,36 +126,10 @@ void colorShape(CC& complex , MyViewer& board)
         }
 }
 
-int main( int argc, char** argv )
+void collapseShape(std::vector<Cell> &SUB , const KSpace& K , CC& complex , int iteration_number )
 {
-    QApplication application(argc,argv);
-
-
-
-    trace.beginBlock ( "Example digitalSetToCubicalComplexes2D" );
-    trace.beginBlock ( "Generate a 2D shape." );
-
-
-    digShape.attach( shape );
-    digShape.init ( shape.getLowerBound(), shape.getUpperBound(), 1.0 );
-    Domain domainShape = digShape.getDomain();
-    DigitalSet aSet( domainShape );
-    Shapes<Domain>::digitalShaper( aSet, digShape );
-
-    trace.endBlock();
-
-    trace.beginBlock ( "Generate a 2D cubical representation." );
-
-    KSpace K;//the complexe
-    K.init (  Point(-20,-20,-20), Point(20,20,20), true );
-    MyViewer board(K);
-    board.show();
-    CC complex ( K );
-    complex.construct< DigitalSet >( aSet );
-
-
-    std::vector<Cell> SUB;//subcomplex of k
-    for (int Coll_iteration=0;Coll_iteration<1;Coll_iteration++)
+   //subcomplex of k
+    for (int Coll_iteration=0;Coll_iteration<iteration_number;Coll_iteration++)
     {
         CC boundary = complex.boundary();
         int priority = 0;
@@ -176,7 +153,38 @@ int main( int argc, char** argv )
             }
         }
     }
+}
+
+int main( int argc, char** argv )
+{
+    QApplication application(argc,argv);
+
+
+
+    trace.beginBlock ( "Example digitalSetToCubicalComplexes2D" );
+    trace.beginBlock ( "Generate a 2D shape." );
+
+
+    digShape.attach( shape );
+    digShape.init ( shape.getLowerBound(), shape.getUpperBound(), 1.0 );
+    Domain domainShape = digShape.getDomain();
+    DigitalSet aSet( domainShape );
+    Shapes<Domain>::digitalShaper( aSet, digShape );
+
+    trace.endBlock();
+    trace.beginBlock ( "Generate a 2D cubical representation." );
+
+    KSpace K;//the complexe
+    K.init (  Point(-20,-20,-20), Point(20,20,20), true );
+    MyViewer board(K);
+    board.show();
+    CC complex ( K );
+    complex.construct< DigitalSet >( aSet );
+    std::vector<Cell> SUB;//subcomplex of k
+
+    collapseShape(SUB ,K ,complex , 1);
     colorShape(complex, board);
+
     trace.endBlock();
     trace.endBlock();
     board<< MyViewer::updateDisplay;

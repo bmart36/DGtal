@@ -110,9 +110,10 @@ private:
     typedef CC::CellMapConstIterator CellMapConstIterator;
 
 
-    int get_orientation(const Cell& F, const Cell& G, const KSpace& K);
-    int get_direction(const Cell& F, const Cell& G, const KSpace& K);
+    void get_orientation(const Cell& F, const Cell& G, const KSpace& K , int& shapeOrientation);
+    void get_direction(const Cell& F, const Cell& G, const KSpace& K , int& shapeDirection);
     void assign_values(const KSpace& K , CC::Iterator begin, CC& complex , int d,int orientation, int dim , std::vector<Cell> &SUB , int priority);
+    void collapseShape(std::vector<Cell> &SUB , const KSpace& K , CC& complex , int iteration_number );
 private:
 
     // ------------------------- Hidden services ------------------------------

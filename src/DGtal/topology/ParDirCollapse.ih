@@ -38,6 +38,108 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // Implementation of inline methods                                          //
+template < typename KSpace>
+inline
+void
+DGtal::ParDirCollapse<KSpace>::get_direction(const Cell& F, const Cell& G, const KSpace& K , int& shapeDirection)
+{
+    Vector V=K.uKCoords(F)-K.uKCoords(G);
+    for (int i=0; i<K.dimension; i++)
+        if (V[i]!=0)
+             shapeDirection=i;
+}
+template < typename KSpace>
+inline
+void
+DGtal::ParDirCollapse<KSpace>::get_orientation(const Cell& F, const Cell& G, const KSpace& K , int& shapeOrientation)
+{
+    Vector V=K.uKCoords(F)-K.uKCoords(G);
+
+    //loop over V coordinates
+    for (int i=0; i<K.dimension; i++)
+        if (V[i]!=0) shapeOrientation = V[i];
+}
+
+template < typename KSpace>
+inline
+void
+DGtal::ParDirCollapse<KSpace>::assign_values(const KSpace& K , CC::Iterator begin, CC& complex , int d,int orientation, int dim , std::vector<Cell> &SUB , int priority)
+{
+    Cells faces = K.uUpperIncident ( *begin );
+    for ( int i = 0; i < faces.size(); i++ )
+    {//test the cell if it's in the complex
+        if ( complex.findCell ( d+1, faces[i] ) != complex.end(d+1) )
+        {
+            int shapeOrientation,shapeDirection;
+            get_orientation(*begin, faces[i], K,shapeOrientation);
+            get_direction(*begin, faces[i], K,shapeDirection);
+            if (shapeOrientation==orientation &&
+                    shapeDirection==dim &&
+                    K.uDim(faces[i])==d+1)
+            {//assigning value with cells
+                SUB.push_back( faces[i] );
+                complex.insertCell( SUB.back(), priority );
+                SUB.push_back( *begin );
+                complex.insertCell( SUB.back(), priority );
+            }
+            break;
+        }
+    }
+}
+
+template < typename KSpace>
+template <typename MyViewer>
+inline
+void
+DGtal::ParDirCollapse<KSpace>::colorShape(CC& complex , MyViewer& board)
+{
+    for ( Dimension d = 0; d <= 2; ++d )
+        for ( CellMapConstIterator it = complex.begin( d ), itE = complex.end( d );
+              it != itE; ++it )
+        {
+            if ( d == 0 )
+                board << CustomColors3D(Color(0, 255,0),Color(0, 255,0));//green : point
+            else if ( d == 1 )
+                board << CustomColors3D(Color(255, 0,0),Color(255, 0,0));//red : line
+            else
+                board << CustomColors3D(Color(0, 0,255 ),Color(0, 0,255));//bleu : surface
+            board << it->first;
+        }
+}
+
+template < typename KSpace>
+template <typename MyViewer>
+inline
+void
+DGtal::ParDirCollapse<KSpace>::collapseShape(std::vector<Cell> &SUB , const KSpace& K , CC& complex , int iteration_number )
+{
+   //subcomplex of k
+    for (int Coll_iteration=0;Coll_iteration<iteration_number;Coll_iteration++)
+    {
+        CC boundary = complex.boundary();
+        int priority = 0;
+        for (int dim=0;dim<K.dimension;dim++)//dim===direction
+        {
+            for (int orientation=-1;orientation<=1;orientation+=2)
+            {
+                for (int d = K.dimension - 1; d >= 0; d--)//d: dimension
+                {
+                    for ( CC::Iterator begin = boundary.begin(); begin != boundary.end(); ++begin, ++priority )
+                    {
+                        if ( K.uDim (*begin ) == d )
+                        {
+                            assign_values(K ,begin, complex ,  d,orientation, dim , SUB , priority);
+                        }
+                    }
+                    std::cout << "Removed " << collapse( complex, SUB.begin(), SUB.end(), P, true, true, true ) << std::endl;
+                    SUB.clear();
+                    priority=0;
+                }
+            }
+        }
+    }
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
