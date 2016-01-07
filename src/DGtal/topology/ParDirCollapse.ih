@@ -66,21 +66,21 @@ inline
 void
 DGtal::ParDirCollapse<KSpace>::assign_values(const KSpace& K , CC::Iterator begin, CC& complex , int d,int orientation, int dim , std::vector<Cell> &SUB , int priority)
 {
-    Cells faces = K.uUpperIncident ( begin );
+    Cells faces = K.uUpperIncident ( *begin );
     for ( int i = 0; i < faces.size(); i++ )
     {//test the cell if it's in the complex
         if ( complex.findCell ( d+1, faces[i] ) != complex.end(d+1) )
         {
             int shapeOrientation,shapeDirection;
-            get_orientation(begin, faces[i], K,shapeOrientation);
-            get_direction(begin, faces[i], K,shapeDirection);
+            get_orientation(*begin, faces[i], K,shapeOrientation);
+            get_direction(*begin, faces[i], K,shapeDirection);
             if (shapeOrientation==orientation &&
                     shapeDirection==dim &&
                     K.uDim(faces[i])==d+1)
             {//assigning value with cells
                 SUB.push_back( faces[i] );
                 complex.insertCell( SUB.back(), priority );
-                SUB.push_back( begin );
+                SUB.push_back( *begin );
                 complex.insertCell( SUB.back(), priority );
             }
             break;
@@ -142,8 +142,7 @@ DGtal::ParDirCollapse<KSpace>::collapseShape(std::vector<Cell> &SUB , const KSpa
 }
 
 
-
-///////////////////////////////////////////////////////////////////////////////
+////1///////////////////////////////////////////////////////////////////////////
 // Implementation of inline functions and external operators                 //
 
 /**
