@@ -31,7 +31,6 @@
 #include <iostream>
 #include <cmath>
 #include <map>
-#include "ConfigExamples.h"
 #include "DGtal/helpers/StdDefs.h"
 #include "DGtal/base/Common.h"
 // Cellular grid
@@ -44,6 +43,8 @@
 // Drawing
 #include "DGtal/io/boards/Board2D.h"
 #include "DGtal/io/Color.h"
+
+#include "DGtal/topology/ParDirCollapse.h"
 ///////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
@@ -79,7 +80,20 @@ public:
     CC * getCubicalFlower () const { return complex; }
 //    ~PredefinedCubicalComplex() { delete  complex; }
 
+    void CollapseSurface(CC& X){
+        std::vector<Cell> W;
+        W.push_back();
+        if(find(W.begin(),W.end(),)==W.end())
+                {
+                    DGtal::ParDirCollapse<KSpace>::collapseShape(W , K , X , 1 );
+
+                }
+    }
+
 };
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
