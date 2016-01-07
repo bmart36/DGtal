@@ -31,6 +31,7 @@
 #include <iostream>
 #include <cmath>
 #include <map>
+#include "DGtal/io/viewers/Viewer3D.h"
 #include "ConfigExamples.h"
 #include "DGtal/helpers/StdDefs.h"
 #include "DGtal/base/Common.h"
@@ -44,8 +45,9 @@
 #include "DGtal/shapes/parametric/Ball3D.h"
 // Drawing
 //#include "DGtal/io/boards/Board3D.h"
-#include "DGtal/io/viewers/Viewer3D.h"
 #include "DGtal/io/Color.h"
+
+#include "DGtal/topology/ParDirCollapse.h"
 ///////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
@@ -146,7 +148,7 @@ void collapseShape(std::vector<Cell> &SUB , const KSpace& K , CC& complex , int 
                             assign_values(K ,begin, complex ,  d,orientation, dim , SUB , priority);
                         }
                     }
-                    std::cout << "Removed " << collapse( complex, SUB.begin(), SUB.end(), P, true, true, true ) << std::endl;
+                    std::cout << "Removed " << collapse<KSpace, CC::CellContainer,std::vector<Cell>::const_iterator, CC::DefaultCellMapIteratorPriority>( complex, SUB.begin(), SUB.end(), P, true, true, true ) << std::endl;
                     SUB.clear();
                     priority=0;
                 }
@@ -182,7 +184,12 @@ int main( int argc, char** argv )
     complex.construct< DigitalSet >( aSet );
     std::vector<Cell> SUB;//subcomplex of k
 
-    collapseShape(SUB ,K ,complex , 1);
+    ParDirCollapse<CC, Space> dirCollape( K );
+    dirCollape.init ( &complex );
+    dirCollape.exec ( SUB, 1 );
+
+
+//    collapseShape(SUB ,K ,complex , 1);
     colorShape(complex, board);
 
     trace.endBlock();
