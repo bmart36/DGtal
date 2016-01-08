@@ -31,17 +31,20 @@
 #include <iostream>
 #include <cmath>
 #include <map>
+#include "DGtal/io/viewers/Viewer3D.h"
+#include "ConfigExamples.h"
 #include "DGtal/helpers/StdDefs.h"
 #include "DGtal/base/Common.h"
 // Cellular grid
 #include "DGtal/topology/CubicalComplex.h"
+#include "DGtal/topology/CubicalComplexFunctions.h"
 // Shape construction
 #include "DGtal/shapes/GaussDigitizer.h"
 #include "DGtal/shapes/Shapes.h"
 #include "DGtal/shapes/EuclideanShapesDecorator.h"
-#include "DGtal/shapes/parametric/Flower2D.h"
+#include "DGtal/shapes/parametric/Ball3D.h"
 // Drawing
-#include "DGtal/io/boards/Board2D.h"
+//#include "DGtal/io/boards/Board3D.h"
 #include "DGtal/io/Color.h"
 
 #include "DGtal/topology/ParDirCollapse.h"
@@ -49,10 +52,23 @@
 
 using namespace std;
 using namespace DGtal;
-using namespace functors;
-using namespace Z2i;
+using namespace functions;
+using namespace Z3i;
+using  namespace ccops;
 
-class PredefinedCubicalComplex {
+
+/////////////////////////////////////////////////////
+typedef Ball3D< Space > MyEuclideanShape;
+MyEuclideanShape shape( RealPoint( 0.0, 0.0, 0. ), 2);
+typedef GaussDigitizer< Space, MyEuclideanShape > MyGaussDigitizer;
+MyGaussDigitizer digShape;
+typedef map<Cell, CubicalCellData> Map;
+typedef CubicalComplex< KSpace, Map > CC;
+typedef Viewer3D<Space, KSpace> MyViewer;
+CC::DefaultCellMapIteratorPriority P;
+typedef CC::CellMapConstIterator CellMapConstIterator;
+
+/*class PredefinedCubicalComplex {
 public:
     typedef Flower2D< Space > MyEuclideanShape;
     typedef GaussDigitizer< Space, MyEuclideanShape > MyGaussDigitizer;
@@ -80,20 +96,67 @@ public:
     CC * getCubicalFlower () const { return complex; }
 //    ~PredefinedCubicalComplex() { delete  complex; }
 
-    void CollapseSurface(CC& X){
-        std::vector<Cell> W;
-        W.push_back();
-        if(find(W.begin(),W.end(),)==W.end())
-                {
-                    DGtal::ParDirCollapse<KSpace>::collapseShape(W , K , X , 1 );
-
-                }
-    }
-
-};
 
 
+};*/
+void colorShape(CC& complex , MyViewer& board)
+{
+    for ( Dimension d = 0; d <= 2; ++d )
+        for ( CellMapConstIterator it = complex.begin( d ), itE = complex.end( d );
+              it != itE; ++it )
+        {
+            if ( d == 0 )
+                board << CustomColors3D(Color(0, 255,0),Color(0, 255,0));//green : point
+            else if ( d == 1 )
+                board << CustomColors3D(Color(255, 0,0),Color(255, 0,0));//red : line
+            else
+                board << CustomColors3D(Color(0, 0,255 ),Color(0, 0,255));//bleu : surface
+            board << it->first;
+        }
+}
 
+int main( int argc, char** argv )
+{
+    QApplication application(argc,argv);
+
+
+
+    trace.beginBlock ( "Example digitalSetToCubicalComplexes2D" );
+    trace.beginBlock ( "Generate a 2D shape." );
+
+
+    digShape.attach( shape );
+    digShape.init ( shape.getLowerBound(), shape.getUpperBound(), 1.0 );
+    Domain domainShape = digShape.getDomain();
+    DigitalSet aSet( domainShape );
+    Shapes<Domain>::digitalShaper( aSet, digShape );
+
+    trace.endBlock();
+    trace.beginBlock ( "Generate a 2D cubical representation." );
+
+    KSpace K;//the complexe
+    K.init (  Point(-20,-20,-20), Point(20,20,20), true );
+    MyViewer board(K);
+    board.show();
+    CC complex ( K );
+    complex.construct< DigitalSet >( aSet );
+    std::vector<Cell> SUB;//subcomplex of k
+
+    ParDirCollapse<CC, Space> dirCollape( K );
+    dirCollape.init ( &complex );
+    dirCollape.exec ( SUB, 1 );
+
+
+//    collapseShape(SUB ,K ,complex , 1);
+    colorShape(complex, board);
+
+    trace.endBlock();
+    trace.endBlock();
+    board<< MyViewer::updateDisplay;
+    application.exec();
+    return 0;
+}
+/*
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -113,7 +176,8 @@ int main( int , char** )
   typedef CubicalComplex< KSpace, Map >     CC;
 
   
- /* typedef CC::CellMapConstIterator CellMapConstIterator;
+ */
+/* typedef CC::CellMapConstIterator CellMapConstIterator;
   for ( Dimension d = 0; d <= 2; ++d )
     for ( CellMapConstIterator it = complex.begin( d ), itE = complex.end( d );
 	 it != itE; ++it )
@@ -131,7 +195,8 @@ int main( int , char** )
 				       new CustomColors( Color( 0, 0, 200 ),
 							 Color( 100, 255, 100 ) ) );
 		 board << it->first;
-	 }*/
+	 }*//*
+
   board << *PCC.getCubicalFlower();
   board.saveEPS ( "cubicalComplexes.eps" );
   trace.endBlock();
@@ -139,3 +204,4 @@ int main( int , char** )
   PCC.~PredefinedCubicalComplex();
   return 0;
 }
+*/

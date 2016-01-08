@@ -96,6 +96,7 @@ private:
     int getOrientation(const Cell& F, const Cell& G);
     int getDirection(const Cell& F, const Cell& G);
     void assignValues( Iterator it, int d,int orientation, int dim, std::vector<Cell> &SUB , int priority);
+    void collapseSurface(std::vector<Cell> &SUB);
 private:
 
     // ------------------------- Hidden services ------------------------------
