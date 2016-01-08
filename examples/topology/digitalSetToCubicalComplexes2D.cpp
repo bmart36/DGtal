@@ -99,8 +99,12 @@ int main( int argc, char** argv )
     digShape.attach( shape );
     digShape.init ( shape.getLowerBound(), shape.getUpperBound(), 1.0 );
     Domain domainShape = digShape.getDomain();
+
     DigitalSet aSet( domainShape );
     Shapes<Domain>::digitalShaper( aSet, digShape );
+
+//    aSet.insert(*it);
+
     trace.endBlock();
     trace.beginBlock ( "Generate a 2D cubical representation." );
     KSpace K;

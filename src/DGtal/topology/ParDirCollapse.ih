@@ -77,8 +77,11 @@ DGtal::ParDirCollapse<CC, TSpace>::assignValues( CellMapConstIterator it, int d,
                     K.uDim(faces[i])==d+1)
             {//assigning value with cells
 
-                //if (faces[i].data != CC::FIXED && *it.data != CC::FIXED)
+                uint32_t data = (*it).second.data;
+                std::cout << "Face initial: "  << faces[i] << "data initial :" << data << "\n" << std::endl;
+                if (faces[i] != CC::FIXED && data != CC::FIXED)
                 {
+                std::cout << "Face removed: "  << faces[i] << "data :" <<data << "\n" << std::endl;
                 SUB.push_back( faces[i] );
                 complex->insertCell( SUB.back(), priority );
                 SUB.push_back( it->first );
