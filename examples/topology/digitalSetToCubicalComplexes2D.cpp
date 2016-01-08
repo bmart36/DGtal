@@ -67,38 +67,11 @@ typedef CubicalComplex< KSpace, Map > CC;
 typedef Viewer3D<Space, KSpace> MyViewer;
 CC::DefaultCellMapIteratorPriority P;
 typedef CC::CellMapConstIterator CellMapConstIterator;
-
-/*class PredefinedCubicalComplex {
-public:
-    typedef Flower2D< Space > MyEuclideanShape;
-    typedef GaussDigitizer< Space, MyEuclideanShape > MyGaussDigitizer;
-    typedef map<Cell, CubicalCellData>   Map;
-    typedef CubicalComplex< KSpace, Map >     CC;
-
-    KSpace K;
-    CC * complex;
-
-public:
-    PredefinedCubicalComplex(Point p, double r , double smallr, unsigned int k, double phi){
-      MyEuclideanShape shape = MyEuclideanShape(p, r, smallr, k, phi);
-      MyGaussDigitizer digShape;
-      digShape.attach( shape );
-      digShape.init ( shape.getLowerBound(), shape.getUpperBound(), 1.0 );
-      Domain domainShape = digShape.getDomain();
-      DigitalSet aSet = DigitalSet( domainShape );
-      Shapes<Domain>::digitalShaper( aSet, digShape );
-
-      K.init ( domainShape.lowerBound(), domainShape.upperBound(), true );
-      complex = new CC ( K );
-      complex->construct( aSet);
-    }
-
-    CC * getCubicalFlower () const { return complex; }
-//    ~PredefinedCubicalComplex() { delete  complex; }
+///////////////////////////////////////////////////////////////////////////////
 
 
 
-};*/
+
 void colorShape(CC& complex , MyViewer& board)
 {
     for ( Dimension d = 0; d <= 2; ++d )
@@ -115,93 +88,52 @@ void colorShape(CC& complex , MyViewer& board)
         }
 }
 
+
+
 int main( int argc, char** argv )
 {
     QApplication application(argc,argv);
 
-
-
     trace.beginBlock ( "Example digitalSetToCubicalComplexes2D" );
     trace.beginBlock ( "Generate a 2D shape." );
-
-
     digShape.attach( shape );
     digShape.init ( shape.getLowerBound(), shape.getUpperBound(), 1.0 );
     Domain domainShape = digShape.getDomain();
     DigitalSet aSet( domainShape );
     Shapes<Domain>::digitalShaper( aSet, digShape );
-
     trace.endBlock();
     trace.beginBlock ( "Generate a 2D cubical representation." );
-
-    KSpace K;//the complexe
+    KSpace K;
     K.init (  Point(-20,-20,-20), Point(20,20,20), true );
     MyViewer board(K);
     board.show();
     CC complex ( K );
     complex.construct< DigitalSet >( aSet );
-    std::vector<Cell> SUB;//subcomplex of k
-
+    std::vector<Cell> SUB;
     ParDirCollapse<CC, Space> dirCollape( K );
     dirCollape.init ( &complex );
     dirCollape.exec ( SUB, 1 );
-
-
-//    collapseShape(SUB ,K ,complex , 1);
     colorShape(complex, board);
-
     trace.endBlock();
     trace.endBlock();
     board<< MyViewer::updateDisplay;
     application.exec();
     return 0;
 }
-/*
-
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-int main( int , char** )
-{
-  trace.beginBlock ( "Example digitalSetToCubicalComplexes2D" );
-  trace.beginBlock ( "Generate a 2D shape." );
-  PredefinedCubicalComplex PCC (  RealPoint( 0.0, 0.0 ), 16, 5, 5, M_PI_2/2.  );// = new PredefinedCubicalComplex();
-  Board2D board;
-
-  Color dorange ( 255,  136,  0,  220 );
-  board.saveEPS("pixel-flower.eps");
-  trace.endBlock();
-  
-  trace.beginBlock ( "Generate a 2D cubical representation." );
-  typedef map<Cell, CubicalCellData>   Map;
-  typedef CubicalComplex< KSpace, Map >     CC;
-
-  
+/*TODO
+ set to be preserve
+ std::vector<cell>w;
+ w.push_back(...,cell[1],...);
+ if(find(w.begin(),w.end(),l)=SUB.end())  find will work for all the element of w
+ {
+   we can do what we want
+ }
+  refatorization of code
+  two different algorithm
+  bug report
  */
-/* typedef CC::CellMapConstIterator CellMapConstIterator;
-  for ( Dimension d = 0; d <= 2; ++d )
-    for ( CellMapConstIterator it = complex.begin( d ), itE = complex.end( d );
-	 it != itE; ++it )
-	 {
-	   if ( d == 0 )
-	     board << CustomStyle( it->first.className(),
-				   new CustomColors( Color( 0, 0, 0 ),
-						     Color( 0, 0, 0 ) ) );
-	  else if ( d == 1 )
-	       board << CustomStyle( it->first.className(),
-				     new CustomColors( Color( 200, 0, 0 ),
-						       Color( 100, 255, 100 ) ) );
-	  else
-		 board << CustomStyle( it->first.className(),
-				       new CustomColors( Color( 0, 0, 200 ),
-							 Color( 100, 255, 100 ) ) );
-		 board << it->first;
-	 }*//*
 
-  board << *PCC.getCubicalFlower();
-  board.saveEPS ( "cubicalComplexes.eps" );
-  trace.endBlock();
-  trace.endBlock();
-  PCC.~PredefinedCubicalComplex();
-  return 0;
-}
-*/
+
