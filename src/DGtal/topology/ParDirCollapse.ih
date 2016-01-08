@@ -65,23 +65,23 @@ DGtal::ParDirCollapse<CC, TSpace>::getOrientation(const Cell& F, const Cell& G)
 template < typename CC,  typename TSpace>
 inline
 void
-DGtal::ParDirCollapse<CC, TSpace>::assignValues(Iterator it, int d,int orientation, int dir , std::vector<Cell> &SUB , int priority)
+DGtal::ParDirCollapse<CC, TSpace>::assignValues( CellMapConstIterator it, int d,int orientation, int dir , std::vector<Cell> &SUB , int priority)
 {
-    Cells faces = K.uUpperIncident ( *it );
+    Cells faces = K.uUpperIncident ( it->first );
     for ( int i = 0; i < faces.size(); i++ )
     {//test the cell if it's in the complex
         if ( complex->findCell ( d+1, faces[i] ) != complex->end(d+1) )
         {
-            if (getOrientation(*it, faces[i])==orientation &&
-                    getDirection(*it, faces[i])==dir &&
+            if (getOrientation(it->first, faces[i])==orientation &&
+                    getDirection(it->first, faces[i])==dir &&
                     K.uDim(faces[i])==d+1)
             {//assigning value with cells
 
-                // if faces[i].data != CC::FIXED && *it.data != CC:::FIXED
+                //if (faces[i].data != CC::FIXED && *it.data != CC::FIXED)
                 {
                 SUB.push_back( faces[i] );
                 complex->insertCell( SUB.back(), priority );
-                SUB.push_back( *it );
+                SUB.push_back( it->first );
                 complex->insertCell( SUB.back(), priority );
                 }
             }
@@ -110,9 +110,9 @@ DGtal::ParDirCollapse<CC, TSpace>::exec(std::vector<Cell> &SUB, int iteration_nu
             {
                 for (int d = K.dimension - 1; d >= 0; d--)//d: dimension
                 {
-                    for ( Iterator begin = boundary.begin(); begin != boundary.end(); ++begin, ++priority )
+                    for (  CellMapConstIterator begin = boundary.begin(d); begin != boundary.end(d); ++begin, ++priority )
                     {
-                        if ( K.uDim (*begin ) == d )
+                        if ( K.uDim (begin->first ) == d )
                         {
                             assignValues(begin,  d,orientation, dim , SUB , priority);
                         }
