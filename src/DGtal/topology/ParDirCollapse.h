@@ -40,29 +40,13 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // Inclusions
-#include <iostream>
 #include <cmath>
-#include <map>
-#include "ConfigExamples.h"
 #include "DGtal/helpers/StdDefs.h"
 #include "DGtal/base/Common.h"
 // Cellular grid
 #include "DGtal/topology/CubicalComplex.h"
 #include "DGtal/topology/CubicalComplexFunctions.h"
-// Shape construction
-#include "DGtal/shapes/GaussDigitizer.h"
-#include "DGtal/shapes/Shapes.h"
-#include "DGtal/shapes/EuclideanShapesDecorator.h"
-#include "DGtal/shapes/parametric/Ball3D.h"
-// Drawing
-#include "DGtal/io/viewers/Viewer3D.h"
-#include "DGtal/io/Color.h"
 //////////////////////////////////////////////////////////////////////////////
-using namespace std;
-using namespace DGtal;
-using namespace functions;
-using namespace Z3i;
-using namespace ccops;
 
 namespace DGtal
 {
@@ -73,92 +57,80 @@ namespace DGtal
  * Description of class 'ParDirCollapse' <p>
  * \brief Aim:
  */
-    template < typename KSpace>
-    class ParDirCollapse
-    {
-        // ----------------------- Standard services ------------------------------
-    public:
 
-        /**
-         * Destructor.
-         */
-        ~ParDirCollapse();
+template < typename CC, typename TSpace>
+class ParDirCollapse
+{
+    // ----------------------- Standard services ------------------------------
+public:
 
-        // ----------------------- Interface --------------------------------------
-    public:
+    /**
+     * Destructor.
+     */
+    ~ParDirCollapse() {}
 
+    // ----------------------- Interface --------------------------------------
+public:
 
+    typedef typename CC::KSpace KSpace;
+    typedef typename TSpace::Vector Vector;
+    typedef typename CC::CellMapConstIterator CellMapConstIterator;
+    typedef typename KSpace::Cell Cell;
+    typedef typename KSpace::Cells Cells;
+    typedef typename CC::Iterator Iterator;
+    ParDirCollapse( const KSpace & k);
+    void init ( CC * pComplex ){ complex = pComplex; }
+    void exec (std::vector<Cell> &SUB, int iteration_number );
 
+    /**
+     * Checks the validity/consistency of the object.
+     * @return 'true' if the object is valid, 'false' otherwise.
+     */
+    bool isValid() const;
 
-
-        void selfDisplay ( std::ostream & out ) const;
-
-        /**
-         * Checks the validity/consistency of the object.
-         * @return 'true' if the object is valid, 'false' otherwise.
-         */
-        bool isValid() const;
-
-        // ------------------------- Protected Datas ------------------------------
-    private:
-        // ------------------------- Private Datas --------------------------------
-
-        typedef Ball3D< Space > MyEuclideanShape;
-        typedef GaussDigitizer< Space, MyEuclideanShape > MyGaussDigitizer;
-        typedef map<Cell, CubicalCellData> Map;
-        typedef CubicalComplex< KSpace, Map > CC;
-        typedef Viewer3D<Space, KSpace> MyViewer;
-        typedef typename CC::CellMapConstIterator CellMapConstIterator;
-
-    public:
-        
-        void get_orientation(const Cell& F, const Cell& G, const KSpace& K , int& shapeOrientation);
-        void get_direction(const Cell& F, const Cell& G, const KSpace& K , int& shapeDirection);
-        void assign_values(const KSpace& K , CC::Iterator begin, CC& complex , int d,int orientation, int dim , std::vector<Cell> &SUB , int priority);
-        void collapseShape(std::vector<Cell> &SUB , const KSpace& K , CC& complex , int iteration_number );
-    private:
-
-        // ------------------------- Hidden services ------------------------------
-    protected:
-
-        /**
-         * Constructor.
-         * Forbidden by default (protected to avoid g++ warnings).
-         */
-        ParDirCollapse();
-
-    private:
-
-        /**
-         * Copy constructor.
-         * @param other the object to clone.
-         * Forbidden by default.
-         */
-        ParDirCollapse ( const ParDirCollapse & other );
-
-        /**
-         * Assignment.
-         * @param other the object to copy.
-         * @return a reference on 'this'.
-         * Forbidden by default.
-         */
-        ParDirCollapse & operator= ( const ParDirCollapse & other );
-
-        // ------------------------- Internals ------------------------------------
-    private:
-
-    }; // end of class ParDirCollapse
+    // ------------------------- Protected Datas ------------------------------
+private:
+    // ------------------------- Private Datas --------------------------------
 
 
-/**
- * Overloads 'operator<<' for displaying objects of class 'ParDirCollapse'.
- * @param out the output stream where the object is written.
- * @param object the object of class 'ParDirCollapse' to write.
- * @return the output stream after the writing.
- */
-    std::ostream&
-            operator<< ( std::ostream & out, const ParDirCollapse<KSpace> & object );
+    int getOrientation(const Cell& F, const Cell& G);
+    int getDirection(const Cell& F, const Cell& G);
+    void assignValues( Iterator it, int d,int orientation, int dim, std::vector<Cell> &SUB , int priority);
+private:
 
+    // ------------------------- Hidden services ------------------------------
+protected:
+
+    /**
+     * Constructor.
+     * Forbidden by default (protected to avoid g++ warnings).
+     */
+    ParDirCollapse();
+
+private:
+
+    /**
+     * Copy constructor.
+     * @param other the object to clone.
+     * Forbidden by default.
+     */
+    ParDirCollapse ( const ParDirCollapse & other );
+
+    /**
+     * Assignment.
+     * @param other the object to copy.
+     * @return a reference on 'this'.
+     * Forbidden by default.
+     */
+    ParDirCollapse & operator= ( const ParDirCollapse & other );
+
+    // ------------------------- Internals ------------------------------------
+private:
+
+    const KSpace& K;
+    CC * complex;
+
+}; // end of class ParDirCollapse
 
 } // namespace DGtal
 
