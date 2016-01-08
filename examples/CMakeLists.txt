@@ -26,7 +26,7 @@ configure_file(${PROJECT_SOURCE_DIR}/examples/ConfigExamples.h.in
 
 #add_subdirectory(images)
 add_subdirectory(io)
-add_subdirectory(geometry)
+#add_subdirectory(geometry)
 #add_subdirectory(doc-examples)
 #add_subdirectory(tutorial-examples)
 add_subdirectory(topology)

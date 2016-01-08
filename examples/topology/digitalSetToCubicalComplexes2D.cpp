@@ -110,9 +110,9 @@ int main( int argc, char** argv )
     CC complex ( K );
     complex.construct< DigitalSet >( aSet );
     std::vector<Cell> SUB;
-    ParDirCollapse<CC, Space> dirCollape( K );
-    dirCollape.init ( &complex );
-    dirCollape.exec ( SUB, 1 );
+    ParDirCollapse<CC, Space> dirCollapse( K );
+    dirCollapse.init ( &complex );
+    dirCollapse.exec ( SUB, 1 );
     colorShape(complex, board);
     trace.endBlock();
     trace.endBlock();
@@ -122,18 +122,3 @@ int main( int argc, char** argv )
 }
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
-/*TODO
- set to be preserve
- std::vector<cell>w;
- w.push_back(...,cell[1],...);
- if(find(w.begin(),w.end(),l)=SUB.end())  find will work for all the element of w
- {
-   we can do what we want
- }
-  refatorization of code
-  two different algorithm
-  bug report
- */
-
-
