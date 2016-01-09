@@ -130,25 +130,23 @@ DGtal::ParDirCollapse<CC, TSpace>::exec(std::vector<Cell> &SUB, int iteration_nu
 template < typename CC, typename TSpace>
 inline
 void
-DGtal::ParDirCollapse<CC, TSpace>::collapseSurface(std::vector<Cell> &SUB){
-    CellMapConstIterator constIterator, constIteratorE;
+DGtal::ParDirCollapse<CC, TSpace>::collapseSurface(){
+    CellMapConstIterator constIterator = complex->begin(K.dimension -1);
+    CellMapConstIterator itEd = complex->end(K.dimension -1);
     Cells faces = K.uUpperIncident ( *constIterator );
     for ( int i = 0; i < faces.size(); i++ )
     {
         if ( complex->findCell ( dim(faces[i]), faces[i] ) != complex->end(dim(faces[i])+1) )
         {
 
-    for ( Dimension d = 0; d <= K.dimension-1; ++d )
-          for ( constIterator = complex.begin( d ), constIteratorE = complex.end( d );
-                constIterator != constIteratorE; ++constIterator )
-          {
-                exec(SUB, 1);
-
-                SUB.push_back( faces[i] );
-                complex->insertCell( SUB.back(), CC::FIXED );
-                SUB.push_back( *constIterator );
-                complex->insertCell( SUB.back(), CC::FIXED );
-          }
+            while(exec(1))
+            {
+                for(;constIterator != itEd; ++constIterator)
+                {
+                    complex->insertCell( faces[i], CC::FIXED );
+                    complex->insertCell( constIterator->first, CC::FIXED );
+                }
+            }
         }
      }
 }
