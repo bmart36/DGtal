@@ -70,7 +70,7 @@ DGtal::ParDirCollapse<CC, TSpace>::exec(int iteration_number )
     using namespace functions;
     using  namespace ccops;
     std::vector<Cell> SUB;
-    int collapseval;
+    int collapseval=0;
     typename CC::DefaultCellMapIteratorPriority P;
     for (int Coll_iteration=0;Coll_iteration<iteration_number;Coll_iteration++)
     {
@@ -113,7 +113,7 @@ DGtal::ParDirCollapse<CC, TSpace>::exec(int iteration_number )
                             }
                         }
                     }
-                    collapseval=collapse( *complex, SUB.begin(), SUB.end(), P, true, true, true );
+                    collapseval+=collapse( *complex, SUB.begin(), SUB.end(), P, true, true, true );
                     SUB.clear();
                     priority=0;
                 }
@@ -137,19 +137,11 @@ DGtal::ParDirCollapse<CC, TSpace>::collapseSurface(){
         for ( int i = 0; i < faces.size(); i++ )
         {
 
-            if ( complex->findCell ( K.uDim(faces[i]), faces[i] ) != complex->end(K.uDim(faces[i])+1) )
+            if ( complex->findCell ( K.dimension, faces[i] ) != complex->end(K.dimension) )
             {
-
-
-                    for(;constIterator != itEd; ++constIterator)
-                    {
-                        complex->insertCell( faces[i], CC::FIXED );
-                        complex->insertCell( constIterator->first, CC::FIXED );
-
-                    }
+                complex->insertCell( faces[i], CC::FIXED );
             }
         }
-            //return;
     }
 }
 

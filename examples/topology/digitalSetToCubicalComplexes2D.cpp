@@ -127,15 +127,3 @@ int main( int argc, char** argv )
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-/*TODO
- set to be preserve
- std::vector<cell>w;
- w.push_back(...,cell[1],...);
- if(find(w.begin(),w.end(),l)=SUB.end())  find will work for all the element of w
- {
-   we can do what we want
- }
-  refatorization of code
-  two different algorithm
-  bug report
- */
