@@ -80,7 +80,8 @@ public:
     typedef typename CC::Iterator Iterator;
     ParDirCollapse( const KSpace & k);
     void init ( CC * pComplex ){ complex = pComplex; }
-    void exec (std::vector<Cell> &SUB, int iteration_number );
+    bool exec (int iteration_number );
+    void collapseSurface();
 
     /**
      * Checks the validity/consistency of the object.
@@ -95,7 +96,6 @@ private:
 
     int getOrientation(const Cell& F, const Cell& G);
     int getDirection(const Cell& F, const Cell& G);
-    void assignValues(  CellMapConstIterator it, int d,int orientation, int dim, std::vector<Cell> &SUB , int priority);
 private:
 
     // ------------------------- Hidden services ------------------------------

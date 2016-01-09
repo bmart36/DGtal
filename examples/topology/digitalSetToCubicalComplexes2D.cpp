@@ -113,10 +113,10 @@ int main( int argc, char** argv )
     board.show();
     CC complex ( K );
     complex.construct< DigitalSet >( aSet );
-    std::vector<Cell> SUB;
     ParDirCollapse<CC, Space> dirCollape( K );
     dirCollape.init ( &complex );
-    dirCollape.exec ( SUB, 1 );
+    //dirCollape.exec ( 1 );
+    dirCollape.collapseSurface();
     colorShape(complex, board);
     trace.endBlock();
     trace.endBlock();
@@ -139,5 +139,3 @@ int main( int argc, char** argv )
   two different algorithm
   bug report
  */
-
-
