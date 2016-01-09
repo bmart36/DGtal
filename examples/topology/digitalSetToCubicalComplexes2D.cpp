@@ -99,8 +99,12 @@ int main( int argc, char** argv )
     digShape.attach( shape );
     digShape.init ( shape.getLowerBound(), shape.getUpperBound(), 1.0 );
     Domain domainShape = digShape.getDomain();
+
     DigitalSet aSet( domainShape );
     Shapes<Domain>::digitalShaper( aSet, digShape );
+
+//    aSet.insert(*it);
+
     trace.endBlock();
     trace.beginBlock ( "Generate a 2D cubical representation." );
     KSpace K;
@@ -109,10 +113,10 @@ int main( int argc, char** argv )
     board.show();
     CC complex ( K );
     complex.construct< DigitalSet >( aSet );
-    std::vector<Cell> SUB;
-    ParDirCollapse<CC, Space> dirCollapse( K );
-    dirCollapse.init ( &complex );
-    dirCollapse.exec ( SUB, 1 );
+    ParDirCollapse<CC, Space> dirCollape( K );
+    dirCollape.init ( &complex );
+    //dirCollape.exec ( 1 );
+    dirCollape.collapseSurface();
     colorShape(complex, board);
     trace.endBlock();
     trace.endBlock();
@@ -122,3 +126,16 @@ int main( int argc, char** argv )
 }
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+/*TODO
+ set to be preserve
+ std::vector<cell>w;
+ w.push_back(...,cell[1],...);
+ if(find(w.begin(),w.end(),l)=SUB.end())  find will work for all the element of w
+ {
+   we can do what we want
+ }
+  refatorization of code
+  two different algorithm
+  bug report
+ */

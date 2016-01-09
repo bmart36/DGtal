@@ -62,43 +62,15 @@ DGtal::ParDirCollapse<CC, TSpace>::getOrientation(const Cell& F, const Cell& G)
         if (V[i]!=0) return V[i];
 }
 
-template < typename CC,  typename TSpace>
-inline
-void
-DGtal::ParDirCollapse<CC, TSpace>::assignValues( CellMapConstIterator it, int d,int orientation, int dir , std::vector<Cell> &SUB , int priority)
-{
-    Cells faces = K.uUpperIncident ( it->first );
-    for ( int i = 0; i < faces.size(); i++ )
-    {//test the cell if it's in the complex
-        if ( complex->findCell ( d+1, faces[i] ) != complex->end(d+1) )
-        {
-            if (getOrientation(it->first, faces[i])==orientation &&
-                    getDirection(it->first, faces[i])==dir &&
-                    K.uDim(faces[i])==d+1)
-            {//assigning value with cells
-
-                //if (faces[i].data != CC::FIXED && *it.data != CC::FIXED)
-                {
-                SUB.push_back( faces[i] );
-                complex->insertCell( SUB.back(), priority );
-                SUB.push_back( it->first );
-                complex->insertCell( SUB.back(), priority );
-                }
-            }
-            break;
-        }
-    }
-}
-
-
-
 template < typename CC, typename TSpace>
 inline
-void
-DGtal::ParDirCollapse<CC, TSpace>::exec(std::vector<Cell> &SUB, int iteration_number )
+bool
+DGtal::ParDirCollapse<CC, TSpace>::exec(int iteration_number )
 {
     using namespace functions;
     using  namespace ccops;
+    std::vector<Cell> SUB;
+    int collapseval;
     typename CC::DefaultCellMapIteratorPriority P;
     for (int Coll_iteration=0;Coll_iteration<iteration_number;Coll_iteration++)
     {
@@ -114,44 +86,73 @@ DGtal::ParDirCollapse<CC, TSpace>::exec(std::vector<Cell> &SUB, int iteration_nu
                     {
                         if ( K.uDim (begin->first ) == d )
                         {
-                            assignValues(begin,  d,orientation, dim , SUB , priority);
+                            //assignValues(begin,  d,orientation, dim , SUB , priority);
+                            Cells faces = K.uUpperIncident ( begin->first );
+                            for ( int i = 0; i < faces.size(); i++ )
+                            {//test the cell if it's in the complex
+                                if ( complex->findCell ( d+1, faces[i] ) != complex->end(d+1) )
+                                {
+                                    if (getOrientation(begin->first, faces[i])==orientation &&
+                                            getDirection(begin->first, faces[i])==dim &&
+                                            K.uDim(faces[i])==d+1)
+                                    {//assigning value with cells
+
+                                        uint32_t data = (*begin).second.data;
+                                        //std::cout << "Face initial: "  << faces[i] << "data initial :" << data << "\n" << std::endl;
+                                        if (faces[i] != CC::FIXED && data != CC::FIXED)
+                                        {
+                                        //std::cout << "Face removed: "  << faces[i] << "data :" <<data << "\n" << std::endl;
+                                        SUB.push_back( faces[i] );
+                                        complex->insertCell( SUB.back(), priority );
+                                        SUB.push_back( begin->first );
+                                        complex->insertCell( SUB.back(), priority );
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
                         }
                     }
-                    collapse( *complex, SUB.begin(), SUB.end(), P, true, true, true );
+                    collapseval=collapse( *complex, SUB.begin(), SUB.end(), P, true, true, true );
                     SUB.clear();
                     priority=0;
                 }
             }
         }
     }
+    if(collapseval>0)
+        return true;
+       return false;
 }
-
 
 template < typename CC, typename TSpace>
 inline
 void
 DGtal::ParDirCollapse<CC, TSpace>::collapseSurface(){
-    CellMapConstIterator constIterator = complex->begin(K.dimension -1);
-    CellMapConstIterator itEd = complex->end(K.dimension -1);
-    Cells faces = K.uUpperIncident ( *constIterator );
-    for ( int i = 0; i < faces.size(); i++ )
+    while(exec(1))
     {
-        if ( complex->findCell ( dim(faces[i]), faces[i] ) != complex->end(dim(faces[i])+1) )
+        CellMapConstIterator constIterator = complex->begin(K.dimension -1);
+        CellMapConstIterator itEd = complex->end(K.dimension -1);
+        Cells faces = K.uUpperIncident ( constIterator->first );
+        for ( int i = 0; i < faces.size(); i++ )
         {
 
-            while(exec(1))
+            if ( complex->findCell ( K.uDim(faces[i]), faces[i] ) != complex->end(K.uDim(faces[i])+1) )
             {
-                for(;constIterator != itEd; ++constIterator)
-                {
-                    complex->insertCell( faces[i], CC::FIXED );
-                    complex->insertCell( constIterator->first, CC::FIXED );
-                }
+
+
+                    for(;constIterator != itEd; ++constIterator)
+                    {
+                        complex->insertCell( faces[i], CC::FIXED );
+                        complex->insertCell( constIterator->first, CC::FIXED );
+
+                    }
             }
         }
-     }
+            //return;
+    }
 }
+
 
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
-
