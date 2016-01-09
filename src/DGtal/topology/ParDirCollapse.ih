@@ -134,14 +134,19 @@ DGtal::ParDirCollapse<CC, TSpace>::collapseSurface(){
         CellMapConstIterator constIterator = complex->begin(K.dimension -1);
         CellMapConstIterator itEd = complex->end(K.dimension -1);
         Cells faces = K.uUpperIncident ( constIterator->first );
+        bool status = false;
         for ( int i = 0; i < faces.size(); i++ )
         {
 
             if ( complex->findCell ( K.dimension, faces[i] ) != complex->end(K.dimension) )
             {
-                complex->insertCell( faces[i], CC::FIXED );
+                status = true;
+                break;
             }
         }
+
+        if(!status)
+            complex->insertCell( faces[i], CC::FIXED );
     }
 }
 
